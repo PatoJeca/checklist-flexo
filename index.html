@@ -162,7 +162,7 @@ button {
         <textarea id="obs"></textarea>
 
         <button onclick="gerarResumo()">Gerar Resumo</button>
-        <button onclick="enviarOutlook()">Enviar via Outlook</button>
+        <button onclick="enviarOutlook()">Enviar via Outlook Web</button>
         <button onclick="enviarGmail()">Enviar via Gmail</button>
 
         <div class="result" id="resultado"></div>
@@ -243,14 +243,17 @@ function montarTextoEmail() {
     return document.getElementById("resultado").innerText;
 }
 
+// OUTLOOK WEB
 function enviarOutlook() {
     let texto = montarTextoEmail();
     let assunto = "Checklist Flexografia";
 
-    let mailto = `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(texto)}`;
-    window.location.href = mailto;
+    let url = `https://outlook.office.com/mail/deeplink/compose?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(texto)}`;
+    
+    window.open(url, '_blank');
 }
 
+// GMAIL
 function enviarGmail() {
     let texto = montarTextoEmail();
     let assunto = "Checklist Flexografia";
