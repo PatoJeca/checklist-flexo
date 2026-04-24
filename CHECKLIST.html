@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Checklist Flexografia</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #eef1f5;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    overflow: hidden;
+}
+
+.header {
+    background: #f26522;
+    color: white;
+    padding: 15px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.content {
+    padding: 20px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+input, textarea, select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+textarea {
+    height: 80px;
+}
+
+.section-title {
+    margin-top: 20px;
+    font-weight: bold;
+    color: #f26522;
+}
+
+.inline {
+    display: flex;
+    gap: 10px;
+}
+
+.small {
+    width: 80px;
+}
+
+button {
+    background: #f26522;
+    color: white;
+    border: none;
+    padding: 12px;
+    width: 100%;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+.result {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f4f4f4;
+    border-radius: 6px;
+    white-space: pre-line;
+}
+
+/* TAGS DE CORES */
+.tag {
+    background: #0073e6;
+    color: white;
+    padding: 5px 8px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+}
+
+.tag span {
+    cursor: pointer;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="header">Checklist Flexografia</div>
+
+    <div class="content">
+
+        <!-- 1 -->
+        <div class="section-title">Cilindro e Fechamento</div>
+        <div class="grid">
+            <input type="text" id="cilindro" placeholder="Cilindro">
+            <input type="text" id="fechamento" placeholder="Fechamento">
+        </div>
+
+        <!-- 2 -->
+        <div class="section-title">Embalagem</div>
+        <div class="grid">
+            <input type="number" id="larguraEmb" placeholder="Largura (mm)">
+            <input type="number" id="alturaEmb" placeholder="Altura (mm)">
+        </div>
+
+        <!-- 3 -->
+        <div class="section-title">Área de Impressão</div>
+        <div class="grid">
+            <input type="number" id="larguraImp" placeholder="Largura (mm)">
+            <input type="number" id="alturaImp" placeholder="Altura (mm)">
+        </div>
+
+        <!-- 4 -->
+        <div class="section-title">Repetição e Pista</div>
+        <div class="grid">
+            <input type="number" id="repeticao" placeholder="Repetição (mm)">
+            <input type="number" id="pista" placeholder="Pista (mm)">
+        </div>
+
+        <!-- CORES -->
+        <div class="section-title">Cores</div>
+        <div class="inline">
+            <input type="number" id="qtdCores" class="small" max="99" placeholder="Qtd">
+            <input type="text" id="inputCor" placeholder="Digite a cor e pressione Enter">
+        </div>
+
+        <div id="listaCores" style="margin-top:10px; display:flex; flex-wrap:wrap; gap:5px;"></div>
+
+        <!-- SUBSTRATO -->
+        <div class="section-title">Substrato</div>
+        <select id="substrato">
+            <option value="">Selecione</option>
+            <option>Pigmentado</option>
+            <option>Transparente</option>
+            <option>Kraft</option>
+            <option>Metalizado</option>
+        </select>
+
+        <!-- FOTOCÉLULA -->
+        <div class="section-title">Fotocélula</div>
+        <input type="text" id="fotocelula" placeholder="Tamanho">
+
+        <!-- AMOSTRA -->
+        <div class="section-title">Amostra</div>
+        <div class="inline">
+            <label><input type="radio" name="amostra" value="Sim"> Sim</label>
+            <label><input type="radio" name="amostra" value="Não"> Não</label>
+        </div>
+
+        <!-- OBS -->
+        <div class="section-title">Observações</div>
+        <textarea id="obs"></textarea>
+
+        <button onclick="gerarResumo()">Gerar Resumo</button>
+        <button onclick="enviarEmail()">Enviar por Email</button>
+
+        <div class="result" id="resultado"></div>
+
+    </div>
+</div>
+
+<script>
+
+// LISTA DE CORES
+let coresLista = [];
+
+document.getElementById("inputCor").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+        e.preventDefault();
+
+        let valor = this.value.trim();
+        if (!valor) return;
+
+        coresLista.push(valor);
+        renderCores();
+        this.value = "";
+    }
+});
+
+function renderCores() {
+    let container = document.getElementById("listaCores");
+    container.innerHTML = "";
+
+    coresLista.forEach((cor, index) => {
+        let tag = document.createElement("div");
+        tag.className = "tag";
+        tag.innerHTML = `${cor} <span onclick="removerCor(${index})">×</span>`;
+        container.appendChild(tag);
+    });
+}
+
+function removerCor(index) {
+    coresLista.splice(index, 1);
+    renderCores();
+}
+
+// RESUMO
+function gerarResumo() {
+
+    let amostra = document.querySelector('input[name="amostra"]:checked');
+    amostra = amostra ? amostra.value : "";
+
+    let texto = "CHECKLIST FLEXOGRAFIA\n\n";
+
+    texto += "CILINDRO / FECHAMENTO:\n";
+    texto += "Cilindro: " + cilindro.value + "\n";
+    texto += "Fechamento: " + fechamento.value + "\n\n";
+
+    texto += "EMBALAGEM:\n";
+    texto += "Largura: " + larguraEmb.value + " mm\n";
+    texto += "Altura: " + alturaEmb.value + " mm\n\n";
+
+    texto += "ÁREA DE IMPRESSÃO:\n";
+    texto += "Largura: " + larguraImp.value + " mm\n";
+    texto += "Altura: " + alturaImp.value + " mm\n\n";
+
+    texto += "REPETIÇÃO / PISTA:\n";
+    texto += "Repetição: " + repeticao.value + " mm\n";
+    texto += "Pista: " + pista.value + " mm\n\n";
+
+    texto += "CORES:\n";
+    texto += "Quantidade: " + qtdCores.value + "\n";
+    texto += "Cores: " + coresLista.join(", ") + "\n\n";
+
+    texto += "SUBSTRATO: " + substrato.value + "\n";
+    texto += "FOTOCÉLULA: " + fotocelula.value + "\n";
+    texto += "AMOSTRA: " + amostra + "\n\n";
+
+    texto += "OBSERVAÇÕES:\n" + obs.value;
+
+    document.getElementById("resultado").innerText = texto;
+}
+
+// EMAIL
+function enviarEmail() {
+    gerarResumo();
+    let texto = document.getElementById("resultado").innerText;
+
+    let assunto = "Checklist Flexografia";
+
+    let mailto = `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(texto)}`;
+    window.location.href = mailto;
+}
+
+</script>
+
+</body>
+</html>
